@@ -38,31 +38,6 @@ fn main() {
         .map(|update| update[update.len() / 2])
         .sum::<u64>();
 
-    fn order_between(orders: &[(u64, u64)], left: u64, right: u64) -> Option<Ordering> {
-        if orders.contains(&(left, right)) {
-            return Some(Ordering::Less);
-        }
-        if orders.contains(&(right, left)) {
-            return Some(Ordering::Greater);
-        }
-
-        for &(order_left, order_right) in orders {
-            if left == order_left {
-                if let Some(order) = order_between(orders, order_right, right) {
-                    return Some(order);
-                }
-            }
-
-            if right == order_right {
-                if let Some(order) = order_between(orders, left, order_left) {
-                    return Some(order);
-                }
-            }
-        }
-
-        None
-    }
-
     let part2 = updates
         .iter()
         .filter(|update| {
@@ -74,7 +49,15 @@ fn main() {
         })
         .map(|update| {
             let mut update = update.clone();
-            update.sort_by(|&left, &right| order_between(&orders, left, right).unwrap());
+            update.sort_by(|&left, &right| {
+                if orders.contains(&(left, right)) {
+                    Ordering::Less
+                } else if orders.contains(&(right, left)) {
+                    Ordering::Greater
+                } else {
+                    Ordering::Equal
+                }
+            });
             update
         })
         .map(|update| update[update.len() / 2])
